@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkbox Selection with Encoding</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 20px;
+      background-color: #f8f9fa;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #007bff;
+    }
+
+    .grid-container {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(5, 50px);
+      gap: 10px;
+      align-items: center;
+    }
+
+    .row-number {
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      color: #007bff;
+    }
+
+    .row label {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 50px;
+      height: 50px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+
+    .row label:hover {
+      border-color: #007bff;
+    }
+
+    .row input {
+      display: none;
+    }
+
+    .row input:checked + label {
+      background-color: #007bff;
+      color: #fff;
+    }
+
+    .result {
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 20px;
+      padding: 10px;
+      background: #f1f1f1;
+      border-radius: 5px;
+    }
+
+    .summary-container {
+      margin-top: 20px;
+    }
+
+    .summary-container label {
+      font-weight: bold;
+    }
+
+    .summary-container input {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f8f9fa;
+    }
+
+    .summary-container input::placeholder {
+      color: #999;
+    }
+
+    .update-btn {
+      display: block;
+      margin: 20px auto;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s;
+    }
+
+    .update-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Checkbox Selection with Encoding</h1>
+    <div class="grid-container" id="grid-container">
+      <!-- الشبكة ستُنشأ ديناميكيًا هنا -->
+    </div>
+
+    <div class="summary-container">
+      <label for="summary">تلخيص الإدخالات:</label>
+      <input type="text" id="summary" readonly placeholder="سيتم عرض الإدخالات هنا">
+    </div>
+
+    <button id="update-btn" class="update-btn">تحديث الشيفرة</button>
+    <div class="result" id="result">_</div>
+  </div>
+
+  <script>
+    const gridContainer = document.getElementById('grid-container');
+    const summaryInput = document.getElementById('summary');
+    const result = document.getElementById('result');
+    const updateBtn = document.getElementById('update-btn');
+
+    // تعريف التشفير
+    const cipher = {
+      "1": ".",
+      "2": "..",
+      "3": "...",
+      "4": "....",
+      "5": "_",
+      "6": "_.",
+      "7": "_..",
+      "8": "_...",
+      "9": "_....",
+      "10": "__",
+      "11": "__.",
+      "12": "__..",
+      "13": "__...",
+      "14": "__....",
+      "15": "___",
+      "16": "___.",
+      "17": "___..",
+      "18": "___...",
+      "19": "___....",
+      "20": "____",
+      "21": "____.",
+      "22": "____..",
+      "23": "____...",
+      "24": "____....",
+      "25": "_____",
+      "A": ".",
+      "B": "..",
+      "C": "...",
+      "D": "....",
+      "E": ".....",
+      ":": "..",
+      "_": "_"
+    };
+
+    // إنشاء الشبكة من 1 إلى 25
+    for (let row = 1; row <= 25; row++) {
+      const rowNumber = document.createElement('div');
+      rowNumber.classList.add('row-number');
+      rowNumber.textContent = row;
+      gridContainer.appendChild(rowNumber);
+
+      const rowDiv = document.createElement('div');
+      rowDiv.classList.add('row');
+
+      ['A', 'B', 'C', 'D', 'E'].forEach(col => {
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `${row}${col}`;
+        checkbox.value = col;
+        checkbox.setAttribute('data-row', row);
+
+        const label = document.createElement('label');
+        label.setAttribute('for', `${row}${col}`);
+        label.textContent = col;
+
+        rowDiv.appendChild(checkbox);
+        rowDiv.appendChild(label);
+      });
+
+      gridContainer.appendChild(rowDiv);
+    }
+
+    // تحديث النتائج عند التغيير (يتم فقط بعد الضغط على الزر)
+    const checkboxes = document.querySelectorAll('.row input');
+
+    function updateSummaryAndResult() {
+      const rows = {};
+      const encodedResult = [];
+
+      checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+          const row = checkbox.getAttribute('data-row');
+          const value = checkbox.value;
+
+          if (!rows[row]) {
+            rows[row] = `${row}:`;
+          }
+          rows[row] += value;
+        }
+      });
+
+      // خانة التلخيص: عرض الأرقام مع الحروف مباشرة
+      const summaryText = Object.entries(rows)
+        .map(([row, values]) => {
+          const rowNumber = `[${row}]`;  // عرض الرقم هنا
+          const letters = values.split(':')[1];  // استخراج الحروف
+          return rowNumber + ':' + letters;
+        })
+        .join('_');
+
+      // عرض النص في خانة التلخيص
+      summaryInput.value = summaryText;
+
+      // خانة التشفير: عرض شيفرة الأرقام مع شيفرة الحروف
+      const resultText = Object.entries(rows)
+        .map(([row, values]) => {
+          const rowNumberCode = cipher[row];  // استخدم شيفرة الرقم
+          const lettersCode = values
+            .split(':')[1]
+            .split('')
+            .map(char => cipher[char])
+            .join('-');
+          return rowNumberCode + '-' + lettersCode;  // الشيفرة النهائية
+        })
+        .join(' / ');
+
+      result.textContent = resultText || '_';
+    }
+
+    // عند الضغط على الزر
+    updateBtn.addEventListener('click', () => {
+      updateSummaryAndResult();
+      // تعطيل الزر لمدة 20 ثانية
+      updateBtn.disabled = true;
+      setTimeout(() => {
+        updateBtn.disabled = false;
+      }, 20000); // 20 ثانية
+    });
+  </script>
+</body>
+</html>
